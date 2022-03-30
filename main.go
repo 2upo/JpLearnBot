@@ -74,7 +74,7 @@ func main() {
 		"wa", "wi", "wu", "we", "wo", "n",
 	}
 
-	bot, err := tgbotapi.NewBotAPI("5260781025:AAGL4smCIxZ8EL7K621XuYbOyysNryruEgY")
+	bot, err := tgbotapi.NewBotAPI("")
 	if err != nil {
 		panic(err)
 	}
