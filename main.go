@@ -47,7 +47,7 @@ func main() {
 	}
 	katakanaPic := make([]string, 51)
 	for i := 0; i < 51; i++ {
-		katakanaPic[i] = fmt.Sprint(i+1) + ".jpg"
+		katakanaPic[i] = "katakana/" + fmt.Sprint(i+1) + ".jpg"
 	}
 	hiraganaTrans := []string{
 		"a", "i", "u", "e", "o",
@@ -74,7 +74,7 @@ func main() {
 		"wa", "wi", "wu", "we", "wo", "n",
 	}
 
-	bot, err := tgbotapi.NewBotAPI("")
+	bot, err := tgbotapi.NewBotAPI("5260781025:AAGL4smCIxZ8EL7K621XuYbOyysNryruEgY")
 	if err != nil {
 		panic(err)
 	}
@@ -87,6 +87,9 @@ func main() {
 
 	updates := bot.GetUpdatesChan(updateConfig)
 
+	counter := 0
+	randK := shuffleIndex(len(katakanaPic))
+
 	for update := range updates {
 		rand.Seed(time.Now().UnixNano())
 		if update.Message == nil {
@@ -96,16 +99,18 @@ func main() {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 
 		randH := rand.Intn(len(hiraganaPic))
-		randK := rand.Intn(len(katakanaPic))
-
 		if update.Message.Text == "/katakana" {
-			msg.Entities = []tgbotapi.MessageEntity{{Type: "spoiler", Offset: 0, Length: len(katakanaTrans[randK]) + 8}}
-			msg.Text = "Answer: " + katakanaTrans[randK]
-			file := tgbotapi.FilePath("katakana/" + katakanaPic[randK])
+			if counter > len(katakanaPic)-1 {
+				counter = 0
+				randK = shuffleIndex(len(katakanaPic))
+			}
+			msg.Entities = []tgbotapi.MessageEntity{{Type: "spoiler", Offset: 0, Length: len(katakanaTrans[randK[counter]]) + 8}}
+			msg.Text = "Answer: " + katakanaTrans[randK[counter]]
+			file := tgbotapi.FilePath(katakanaPic[randK[counter]])
 			msg2 := tgbotapi.NewPhoto(update.Message.Chat.ID, file)
 			bot.Send(msg2)
 			bot.Send(msg)
-
+			counter++
 		} else if update.Message.Text == "/hiragana" {
 			msg.Entities = []tgbotapi.MessageEntity{{Type: "spoiler", Offset: 0, Length: len(hiraganaTrans[randH]) + 8}}
 			msg.Text = "Answer: " + hiraganaTrans[randH]
@@ -119,4 +124,18 @@ func main() {
 			bot.Send(msg)
 		}
 	}
+}
+
+func shuffleIndex(len int) []int {
+	result := make([]int, len)
+	for i := 0; i < len; i++ {
+		result[i] = i
+	}
+	//shuffle
+	rand.Seed(time.Now().UnixNano())
+	for i := 0; i < len; i++ {
+		shuffleIndex := rand.Intn(len)
+		result[i], result[shuffleIndex] = result[shuffleIndex], result[i]
+	}
+	return result
 }
